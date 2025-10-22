@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Todo List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .todo-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 400px;
+      max-width: 90%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      background: #1e293b;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    li {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    li.completed span {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+    .actions button {
+      margin-left: 5px;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .actions button:hover {
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="todo-container">
+    <h1>Todo List</h1>
+    <div class="input-group">
+      <input type="text" id="todo-input" placeholder="Add a new task...">
+      <button id="add-btn">Add</button>
+    </div>
+    <ul id="todo-list"></ul>
+    <div style="text-align:center; margin-top:10px;">
+      <button id="clear-btn">Clear Completed</button>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const list = document.getElementById('todo-list');
+    const clearBtn = document.getElementById('clear-btn');
+
+    function loadTodos() {
+      const saved = localStorage.getItem('todos_html_v1');
+      return saved ? JSON.parse(saved) : [];
+    }
+
+    function saveTodos(todos) {
+      localStorage.setItem('todos_html_v1', JSON.stringify(todos));
+    }
+
+    let todos = loadTodos();
+
+    function render() {
+      list.innerHTML = '';
+      todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.className = todo.done ? 'completed' : '';
+
+        const span = document.createElement('span');
+        span.textContent = todo.text;
+        span.onclick = () => toggleDone(index);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => editTodo(index);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => deleteTodo(index);
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+
+        li.appendChild(span);
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+      saveTodos(todos);
+    }
+
+    function addTodo() {
+      const text = input.value.trim();
+      if (!text) return;
+      todos.unshift({ text, done: false });
+      input.value = '';
+      render();
+    }
+
+    function toggleDone(index) {
+      todos[index].done = !todos[index].done;
+      render();
+    }
+
+    function editTodo(index) {
+      const newText = prompt('Edit task:', todos[index].text);
+      if (newText !== null) {
+        todos[index].text = newText.trim();
+        render();
+      }
+    }
+
+    function deleteTodo(index) {
+      todos.splice(index, 1);
+      render();
+    }
+
+    function clearCompleted() {
+      todos = todos.filter(t => !t.done);
+      render();
+    }
+
+    addBtn.onclick = addTodo;
+    clearBtn.onclick = clearCompleted;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTodo();
+    });
+
+    render();
+  </script>
+</body>
+</html>
